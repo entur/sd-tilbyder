@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: Tverrsektorielt datasamarbeid - datatilbyder
+  description: |-
+    Dette er API-specen som kreves for å implementere deling av data fra din organisasjon. 
+    API-et validerer et innkommende maskinporten-token og mapper scopet til en liste av tilganger og distribusjonslenker.
+    Disse kan igjen brukes av konsumenter for å aksessere data fra den aktuelle distribusjonen med tilgangen som er oversendt. 
+    
+    Mer informasjon:
+     - [Konsumentbibliotek kommer](https://github.com/orgs/entur/teams/sd)
+     - [Eksempelimplementasjon hos tilbyder](https://github.com/entur/sd-tilbyder)
+  contact:
+    email: tine.kleivane@entur.org
+  license:
+    name: EUROPEAN UNION PUBLIC LICENCE v. 1.2
+    url: https://joinup.ec.europa.eu/sites/default/files/custom-page/attachment/2020-03/EUPL-1.2%20EN.txt
+  version: 1.0.0
+externalDocs:
+  description: Bli kjent med tverrsektorielt datasamarbeid
+  url: https://github.com/orgs/entur/teams/sd
+servers:
+  - url: https://sd-token-exchange-poc.dev.entur.io/
+tags:
+  - name: issue
+    description: Map authorization scopes to distibution urls and corresponding credentials
+paths:
+  /v1/issue-credential:
+    get:
+      tags:
+        - issue
+      summary: Map authorization to a set of authorizations and urls
+      description: Takes maskinporten scopes and maps to a set of distibution url and their corresponding credential
+      operationId: exchangeToken
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DistributionCredential'
+        '401':
+          description: Invalid credentials
+        '422':
+          description: No scopes is not registered with data
+      security:
+        - maskinporten_auth: []
+components:
+  schemas:
+    DistributionCredential:
+      type: object
+      properties:
+        scope:
+          type: string
+          example: entur:skyss.1
+        url:
+          type: string
+          example: https://bigquery.googleapis.com/bigquery/v2/projects/entur-data-external/datasets/realtime_siri_et_view/tables/realtime_siri_et_last_recorded_view
+        credential:
+          $ref: '#/components/schemas/Credential'
+    Credential:
+      type: object
+      properties:
+        token:
+          type: string
+        authType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          example: 3600
+  securitySchemes:
+    maskinporten_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

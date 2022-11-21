@@ -1,0 +1,43 @@
+package org.entur.tokenexchange.repository
+
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
+import com.google.auth.oauth2.ServiceAccountCredentials
+import org.entur.tokenexchange.service.scope.BearerCredential
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Repository
+import java.security.interfaces.RSAPrivateKey
+import java.time.Instant
+
+@Repository
+class TokenRepository(@Value("\${saKey}") val serviceAccountKey: String, @Value("\${saName}") val serviceAccountName: String) {
+    val saCredential: ServiceAccountCredentials =
+        ServiceAccountCredentials.fromStream(serviceAccountKey.byteInputStream())
+
+    fun getJwt(audience: String): BearerCredential {
+        val expiresIn: Long = 3600
+        val sign = JWT.create()
+            .withKeyId(saCredential.privateKeyId)
+            .withIssuer(serviceAccountName)
+            .withSubject(serviceAccountName)
+            .withAudience(audience)
+            .withIssuedAt(Instant.now())
+            .withExpiresAt(Instant.now().plusSeconds(expiresIn))
+            .sign(Algorithm.RSA256(null, saCredential.privateKey as RSAPrivateKey))
+        return BearerCredential(sign, expiresIn)
+    }
+
+    fun getJwt(audience: String, scope: String): BearerCredential {
+        val expiresIn: Long = 3600
+        val sign = JWT.create()
+            .withKeyId(saCredential.privateKeyId)
+            .withIssuer(serviceAccountName)
+            .withSubject(serviceAccountName)
+            .withAudience(audience)
+            .withClaim("scope", scope)
+            .withIssuedAt(Instant.now())
+            .withExpiresAt(Instant.now().plusSeconds(expiresIn))
+            .sign(Algorithm.RSA256(null, saCredential.privateKey as RSAPrivateKey))
+        return BearerCredential(sign, expiresIn)
+    }
+}

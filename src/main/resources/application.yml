@@ -1,0 +1,8 @@
+saKey: "${BIGQUERY_SA}"
+saName: "${BIGQUERY_SA_NAME}"
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://ver2.maskinporten.no/

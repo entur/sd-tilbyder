@@ -1,0 +1,4 @@
+mporten:
+  username: "${MPORTEN_USERNAME}"
+  password: "${MPORTEN_PASSWORD}"
+  tokenendpoint: "${MPORTEN_TOKENENDPOINT}"

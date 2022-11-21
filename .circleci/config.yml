@@ -1,0 +1,162 @@
+version: 2.1
+
+orbs:
+  slack: circleci/slack@4.10.1
+  owasp: entur/owasp@volatile
+
+aliases:
+  - &filter-only-main
+    filters:
+      branches:
+        only:
+          - main
+  - &filter-not-main
+    filters:
+      branches:
+        ignore:
+          - main
+  - &filter-neither-main-nor-renovate
+    filters:
+      branches:
+        ignore:
+          - main
+          - /renovate\/.*/
+  - &jobs-feature-defaults
+    <<: [ *filter-not-main ]
+    context:
+      - global
+  - &jobs-main-defaults
+    <<: [ *filter-only-main ]
+    context:
+      - global
+  - &jobs-deployable-feature-defaults
+    <<: [ *filter-neither-main-nor-renovate ]
+    context:
+      - global
+
+executors:
+  toolbox:
+    docker:
+      - image: google/cloud-sdk:alpine
+        auth:
+          username: $DOCKERHUB_LOGIN
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          _JAVA_OPTIONS: -Xmx1024m
+          TERM: dumb
+  java:
+    docker:
+      - image: cimg/openjdk:18.0
+        auth:
+          username: $DOCKERHUB_LOGIN
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          _JAVA_OPTIONS: -Xmx1024m
+          JVM_OPTS: -Xmx2048m
+          GRADLE_OPTS: -Xmx1536m -XX:+HeapDumpOnOutOfMemoryError -Dorg.gradle.caching=true -Dorg.gradle.configureondemand=true -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false
+          TERM: dumb
+
+commands:
+  lintcheck:
+    steps:
+      - run:
+          name: Check kotlin formatting
+          command: |
+            ./gradlew ktlintCheck
+  build-app:
+    steps:
+      - run:
+          name: Build application
+          command: |
+            ./gradlew bootJar --info
+  gcp-login:
+    steps:
+      - run:
+          name: GCP Authentication
+          command: |
+            echo $DOCKER_PASSWORD > ${HOME}/account-auth.json
+            gcloud auth activate-service-account --key-file ${HOME}/account-auth.json
+  create-image:
+    description: Sets an environment variable GCR_IMAGE_NAME with a '-feature' suffix for non-main branches
+    steps:
+      - run:
+          name: Create Docker image
+          command: |
+            GCR_IMAGE_NAME="token-exchange"
+            if [[ $CIRCLE_BRANCH != "main" ]]; then
+              GCR_IMAGE_NAME="${GCR_IMAGE_NAME}-feature"
+            fi
+            echo "export GCR_IMAGE_NAME=\"${GCR_IMAGE_NAME}\"" >> $BASH_ENV
+            echo "creating image with tag ${CIRCLE_SHA1:0:7}"
+            docker build -t eu.gcr.io/entur-system-1287/${GCR_IMAGE_NAME}:${CIRCLE_SHA1:0:7} .
+  upload-image:
+    steps:
+      - run:
+          name: Upload image to GCR
+          command: |
+            docker login -u _json_key --password-stdin https://eu.gcr.io < ${HOME}/account-auth.json
+            docker push eu.gcr.io/entur-system-1287/${GCR_IMAGE_NAME}:${CIRCLE_SHA1:0:7}
+
+jobs:
+  main-test:
+    executor: java
+    steps:
+      - checkout
+      - lintcheck
+      - run:
+          name: Run main tests
+          command: |
+            ./gradlew test
+      - store_test_results:
+          path: build/test-results
+
+  build:
+    executor: java
+    steps:
+      - checkout
+      - build-app
+      - persist_to_workspace:
+          root: build/libs
+          paths:
+            - 'application.jar'
+
+  upload:
+    docker:
+      - image: google/cloud-sdk
+        auth:
+          username: $DOCKERHUB_LOGIN
+          password: $DOCKERHUB_PASSWORD
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build/libs
+      - setup_remote_docker:
+          version: 19.03.13
+      - gcp-login
+      - create-image
+      - upload-image
+
+workflows:
+  feature:
+    jobs:
+      - build:
+          name: build-feature
+          <<: [ *jobs-feature-defaults ]
+      - main-test:
+          name: test-feature
+          <<: [ *jobs-feature-defaults ]
+
+  build:
+    jobs:
+      - main-test:
+          name: test-main
+          <<: [ *jobs-main-defaults ]
+      - build:
+          name: build-main
+          <<: [ *jobs-main-defaults ]
+      - upload:
+          name: upload-main
+          <<: [ *jobs-main-defaults ]
+          requires:
+            - build-main
+            - test-main
