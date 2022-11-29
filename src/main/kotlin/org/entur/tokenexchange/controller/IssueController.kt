@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import javax.servlet.http.HttpServletRequest
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 
 @RestController
 class IssueController(
@@ -47,7 +48,12 @@ class IssueController(
     private fun log(scopes: Set<Scope>) {
         val callerOrganization = securityContext.withConsumerContext()
         val clientId = securityContext.withClientContext()
+        val requestUrl = withRemoteAddress()
         val scopeValues = scopes.map { it.scopeValue }
-        log.info("Scopes $scopeValues requested by consumer (ID=${callerOrganization.get("ID")}, authority=${callerOrganization.get("authority")}) from client_id $clientId")
+        log.info("Scopes $scopeValues requested by consumer (ID=${callerOrganization.get("ID")}, authority=${callerOrganization.get("authority")}, client_id=$clientId) from remote address $requestUrl")
+    }
+
+    private fun withRemoteAddress(): String {
+        return (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.remoteAddr
     }
 }
