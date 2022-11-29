@@ -64,7 +64,7 @@ class ExchangedAccessTokenTest(
         }
         assert(scope == Scope.SKYSS_APC.scopeValue)
         assert(result.statusCode == HttpStatus.OK)
-        assertTrue((result.body!!.get("items") as ArrayList<*>).size > 1)
+        assertTrue((result.body!!.get("items") as ArrayList<*>).size >= 1)
     }
 
     private fun getMportenToken(userName: String, password: String): String =

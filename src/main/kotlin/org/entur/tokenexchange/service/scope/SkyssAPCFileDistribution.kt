@@ -7,10 +7,11 @@ import org.springframework.stereotype.Service
 class SkyssAPCFileDistribution(val tokenService: AccessTokenService) : ScopeToDistribution {
 
     override fun getScope(): Scope = Scope.SKYSS_APC
+
     override fun getDistribution(): Dataset {
         val jwt = tokenService.getAccessToken()
         return Dataset(
-            "https://storage.googleapis.com/storage/v1/b/tverr_test_test_test/o",
+            "https://storage.googleapis.com/storage/v1/b/skyss_apc_sharing-dev/o",
             jwt,
             getScope()
         )
