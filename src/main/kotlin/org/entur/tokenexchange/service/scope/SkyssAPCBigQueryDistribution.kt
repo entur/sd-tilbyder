@@ -11,7 +11,7 @@ class SkyssAPCBigQueryDistribution(val tokenService: TokenService) : ScopeToDist
     override fun getDistribution(): Dataset {
         val jwt = tokenService.getTokenForAudience("https://bigquery.googleapis.com/")
         return Dataset(
-            "https://bigquery.googleapis.com/bigquery/v2/projects/entur-data-external/datasets/realtime_siri_et_view/tables/realtime_siri_et_last_recorded_view",
+            "https://bigquery.googleapis.com/bigquery/v2/projects/ent-data-sdsharing-ext-prd/datasets/skyss_apc_sharing/tables/rpt_ext_skyss__apc",
             jwt,
             getScope()
         )

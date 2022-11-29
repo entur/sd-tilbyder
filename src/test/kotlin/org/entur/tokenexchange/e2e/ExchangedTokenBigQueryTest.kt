@@ -63,7 +63,7 @@ class ExchangedTokenBigQueryTest(
         }
         assert(scope == Scope.SKYSS_APC.scopeValue)
         assert(result.statusCode == HttpStatus.OK)
-        assert(result.body!!["id"]!! == "entur-data-external:realtime_siri_et_view.realtime_siri_et_last_recorded_view")
+        assert(result.body!!["id"]!! == "ent-data-sdsharing-ext-prd:skyss_apc_sharing.rpt_ext_skyss__apc")
     }
 
     private fun getMportenToken(userName: String, password: String): String =
