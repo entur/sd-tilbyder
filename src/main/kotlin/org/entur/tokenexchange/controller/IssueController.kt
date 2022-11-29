@@ -3,11 +3,15 @@ package org.entur.tokenexchange.controller
 import org.entur.server.api.IssueApi
 import org.entur.server.viewmodel.Credential
 import org.entur.server.viewmodel.DistributionCredential
+import org.entur.tokenexchange.TokenExchangeApplication
 import org.entur.tokenexchange.service.DistributionService
 import org.entur.tokenexchange.service.scope.BearerCredential
+import org.entur.tokenexchange.service.scope.Scope
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 class IssueController(
@@ -15,9 +19,12 @@ class IssueController(
     val securityContext: SecurityContext
 ) : IssueApi {
 
+    val log = LoggerFactory.getLogger(TokenExchangeApplication::class.java)
+
     @GetMapping("/v1/issue-credential")
     override fun exchangeToken(): ResponseEntity<List<DistributionCredential>> {
         val scopes = securityContext.withSecurityContext()
+        log(scopes)
         val distributions = service.getDistributions(scopes)
         return distributions.map {
             val cred: Credential
@@ -35,5 +42,12 @@ class IssueController(
             .let {
                 ResponseEntity.ok(it)
             }
+    }
+
+    private fun log(scopes: Set<Scope>) {
+        val callerOrganization = securityContext.withConsumerContext()
+        val clientId = securityContext.withClientContext()
+        val scopeValues = scopes.map { it.scopeValue }
+        log.info("Scopes $scopeValues requested by consumer (ID=${callerOrganization.get("ID")}, authority=${callerOrganization.get("authority")}) from client_id $clientId")
     }
 }
