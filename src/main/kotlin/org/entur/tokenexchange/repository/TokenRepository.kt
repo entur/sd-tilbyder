@@ -10,7 +10,7 @@ import java.security.interfaces.RSAPrivateKey
 import java.time.Instant
 
 @Repository
-class TokenRepository(@Value("\${saKey}") val serviceAccountKey: String, @Value("\${saName}") val serviceAccountName: String) {
+class TokenRepository(@Value("\${saKey}") val serviceAccountKey: String) {
     val saCredential: ServiceAccountCredentials =
         ServiceAccountCredentials.fromStream(serviceAccountKey.byteInputStream())
 
@@ -18,8 +18,8 @@ class TokenRepository(@Value("\${saKey}") val serviceAccountKey: String, @Value(
         val expiresIn: Long = 3600
         val sign = JWT.create()
             .withKeyId(saCredential.privateKeyId)
-            .withIssuer(serviceAccountName)
-            .withSubject(serviceAccountName)
+            .withIssuer(saCredential.clientEmail)
+            .withSubject(saCredential.clientEmail)
             .withAudience(audience)
             .withIssuedAt(Instant.now())
             .withExpiresAt(Instant.now().plusSeconds(expiresIn))
@@ -31,8 +31,8 @@ class TokenRepository(@Value("\${saKey}") val serviceAccountKey: String, @Value(
         val expiresIn: Long = 3600
         val sign = JWT.create()
             .withKeyId(saCredential.privateKeyId)
-            .withIssuer(serviceAccountName)
-            .withSubject(serviceAccountName)
+            .withIssuer(saCredential.clientEmail)
+            .withSubject(saCredential.clientEmail)
             .withAudience(audience)
             .withClaim("scope", scope)
             .withIssuedAt(Instant.now())

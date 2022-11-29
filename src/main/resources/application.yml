@@ -1,5 +1,4 @@
 saKey: "${BIGQUERY_SA}"
-saName: "${BIGQUERY_SA_NAME}"
 spring:
   security:
     oauth2:
