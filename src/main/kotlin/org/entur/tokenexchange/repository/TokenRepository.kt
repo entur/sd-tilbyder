@@ -4,17 +4,14 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.google.auth.oauth2.ServiceAccountCredentials
 import org.entur.tokenexchange.service.scope.BearerCredential
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Repository
 import java.security.interfaces.RSAPrivateKey
 import java.time.Instant
 
 @Repository
-class TokenRepository(@Value("\${saKey}") val serviceAccountKey: String) {
-    val saCredential: ServiceAccountCredentials =
-        ServiceAccountCredentials.fromStream(serviceAccountKey.byteInputStream())
+class TokenRepository {
 
-    fun getJwt(audience: String): BearerCredential {
+    fun getJwt(saCredential: ServiceAccountCredentials, audience: String): BearerCredential {
         val expiresIn: Long = 3600
         val sign = JWT.create()
             .withKeyId(saCredential.privateKeyId)
@@ -27,7 +24,7 @@ class TokenRepository(@Value("\${saKey}") val serviceAccountKey: String) {
         return BearerCredential(sign, expiresIn)
     }
 
-    fun getJwt(audience: String, scope: String): BearerCredential {
+    fun getJwt(saCredential: ServiceAccountCredentials, audience: String, scope: String): BearerCredential {
         val expiresIn: Long = 3600
         val sign = JWT.create()
             .withKeyId(saCredential.privateKeyId)

@@ -1,5 +1,6 @@
 package org.entur.tokenexchange.service
 
+import com.google.auth.oauth2.ServiceAccountCredentials
 import org.entur.tokenexchange.service.scope.BearerCredential
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -12,9 +13,9 @@ import java.net.URI
 @Service
 class AccessTokenService(val restTemplate: RestTemplate, val tokenService: TokenService) {
 
-    fun getAccessToken(): BearerCredential {
+    fun getAccessToken(saCredential: ServiceAccountCredentials): BearerCredential {
 
-        val jwt = tokenService.getTokenForAccessToken()
+        val jwt = tokenService.getTokenForAccessToken(saCredential)
 
         val url = "https://oauth2.googleapis.com/token"
 

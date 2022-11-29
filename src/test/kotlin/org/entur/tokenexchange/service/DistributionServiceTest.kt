@@ -4,7 +4,8 @@ import org.entur.tokenexchange.service.scope.BearerCredential
 import org.entur.tokenexchange.service.scope.Dataset
 import org.entur.tokenexchange.service.scope.Scope
 import org.entur.tokenexchange.service.scope.ScopeToDistribution
-import org.entur.tokenexchange.service.scope.SkyssAPCBigQueryDistribution
+import org.entur.tokenexchange.service.scope.skyssapc.SkyssAPCBigQueryDistribution
+import org.entur.tokenexchange.service.scope.skyssapc.SkyssAPCServiceAccount
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -12,17 +13,18 @@ import org.mockito.Mockito.mock
 class DistributionServiceTest {
 
     val mock = mock(TokenService::class.java)
+    val serviceaccount = mock(SkyssAPCServiceAccount::class.java)
 
     @Test
     fun knownScopes() {
-        val distributionService = DistributionService(listOf(SkyssAPCBigQueryDistribution(mock)))
+        val distributionService = DistributionService(listOf(SkyssAPCBigQueryDistribution(mock, serviceaccount)))
         val scopes = distributionService.knownScopes()
         assertEquals(scopes, setOf(Scope.SKYSS_APC))
     }
 
     @Test
     fun knownMultipleSetsForScope() {
-        val distributionService = DistributionService(listOf(SkyssAPCBigQueryDistribution(mock), FileDistribution()))
+        val distributionService = DistributionService(listOf(SkyssAPCBigQueryDistribution(mock, serviceaccount), FileDistribution()))
         val scopes = distributionService.knownScopes()
         assertEquals(scopes, setOf(Scope.SKYSS_APC))
     }
