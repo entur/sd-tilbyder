@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class TokenService(val repo: TokenRepository) {
-    fun getToken(): Credential = repo.getJwt("https://bigquery.googleapis.com/")
 
     fun getTokenForAudience(audience: String): Credential = repo.getJwt(audience)
 

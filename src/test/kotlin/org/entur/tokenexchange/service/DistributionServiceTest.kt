@@ -6,19 +6,12 @@ import org.entur.tokenexchange.service.scope.Scope
 import org.entur.tokenexchange.service.scope.ScopeToDistribution
 import org.entur.tokenexchange.service.scope.SkyssAPCBigQueryDistribution
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 
 class DistributionServiceTest {
 
     val mock = mock(TokenService::class.java)
-
-    @BeforeEach
-    internal fun setUp() {
-        `when`(mock.getToken()).thenReturn(BearerCredential("mock_token", 0L))
-    }
 
     @Test
     fun knownScopes() {
