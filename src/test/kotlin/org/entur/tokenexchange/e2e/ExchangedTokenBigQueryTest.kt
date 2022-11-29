@@ -1,5 +1,6 @@
 package org.entur.tokenexchange.e2e
 
+import org.entur.tokenexchange.service.scope.Scope
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -27,7 +28,7 @@ class ExchangedTokenBigQueryTest(
     @Test
     fun `should be able to use exchanged token to run API calls against BQ`() {
         val mportenToken = getMportenToken(mportenUsername, mportenPass)
-        val bqToken = with(
+        val distributionCredentials = with(
             HttpHeaders().also {
                 it.setBearerAuth(
                     mportenToken
@@ -35,29 +36,37 @@ class ExchangedTokenBigQueryTest(
             }
         ) {
             restTemplate.exchange(
-                "http://localhost:$randomServerPort/token",
+                "http://localhost:$randomServerPort/v1/issue-credential",
                 HttpMethod.GET,
                 HttpEntity<String>(this),
-                String::class.java
+                List::class.java
             ).body!!
         }
+
+        val dc = distributionCredentials.get(0) as LinkedHashMap<String,*>
+        val scope = dc.get("scope") as String
+        val url = dc.get("url") as String
+        val credential = dc.get("credential") as LinkedHashMap<String,*>
 
         val result = with(
             HttpHeaders().also {
                 it.setBearerAuth(
-                    bqToken
+                    credential.get("token") as String
                 )
             }
         ) {
             restTemplate.exchange(
-                "https://bigquery.googleapis.com/bigquery/v2/projects/entur-data-external/datasets/realtime_siri_et_view/tables/realtime_siri_et_last_recorded_view",
+                url,
                 HttpMethod.GET,
                 HttpEntity<String>(this),
                 Map::class.java
             )
         }
+        assert(scope == Scope.SKYSS_APC.scopeValue)
         assert(result.statusCode == HttpStatus.OK)
         assert(result.body!!["id"]!! == "entur-data-external:realtime_siri_et_view.realtime_siri_et_last_recorded_view")
+
+
     }
 
     private fun getMportenToken(userName: String, password: String): String =
