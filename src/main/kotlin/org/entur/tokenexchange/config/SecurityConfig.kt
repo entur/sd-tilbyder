@@ -13,7 +13,7 @@ class SecurityConfig {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeRequests()
-            .antMatchers("/token", "/v1/issue-credential", "/accesstoken", "/v1/scope").hasAuthority("SCOPE_entur:skyss.1")
+            .antMatchers("/token", "/v1/issue-credential", "/accesstoken", "/scope").hasAuthority("SCOPE_entur:skyss.1")
             .and()
             .oauth2ResourceServer { oauth2: OAuth2ResourceServerConfigurer<HttpSecurity?> -> oauth2.jwt() }
         return http.build()

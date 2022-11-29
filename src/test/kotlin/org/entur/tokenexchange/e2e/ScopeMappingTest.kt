@@ -1,5 +1,6 @@
 package org.entur.tokenexchange.e2e
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -9,10 +10,8 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ExchangedTokenBigQueryTest(
+class ScopeMappingTest (
     @Value("\${mporten.username}") val mportenUsername: String,
     @Value("\${mporten.password}") val mportenPass: String,
     @Value("\${mporten.tokenendpoint}") val mportenTokenEndpoint: String
@@ -25,9 +24,9 @@ class ExchangedTokenBigQueryTest(
 
 
     @Test
-    fun `should be able to use exchanged token to run API calls against BQ`() {
+    internal fun tokenmapping() {
         val mportenToken = getMportenToken(mportenUsername, mportenPass)
-        val bqToken = with(
+        val auth = with(
             HttpHeaders().also {
                 it.setBearerAuth(
                     mportenToken
@@ -35,29 +34,14 @@ class ExchangedTokenBigQueryTest(
             }
         ) {
             restTemplate.exchange(
-                "http://localhost:$randomServerPort/token",
+                "http://localhost:$randomServerPort/scope",
                 HttpMethod.GET,
                 HttpEntity<String>(this),
-                String::class.java
+                List::class.java
             ).body!!
         }
 
-        val result = with(
-            HttpHeaders().also {
-                it.setBearerAuth(
-                    bqToken
-                )
-            }
-        ) {
-            restTemplate.exchange(
-                "https://bigquery.googleapis.com/bigquery/v2/projects/entur-data-external/datasets/realtime_siri_et_view/tables/realtime_siri_et_last_recorded_view",
-                HttpMethod.GET,
-                HttpEntity<String>(this),
-                Map::class.java
-            )
-        }
-        assert(result.statusCode == HttpStatus.OK)
-        assert(result.body!!["id"]!! == "entur-data-external:realtime_siri_et_view.realtime_siri_et_last_recorded_view")
+        Assertions.assertEquals("entur:skyss.1", auth.get(0))
     }
 
     private fun getMportenToken(userName: String, password: String): String =

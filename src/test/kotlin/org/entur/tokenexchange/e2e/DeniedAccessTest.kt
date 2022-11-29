@@ -21,7 +21,7 @@ class DeniedAccessTest() {
     private lateinit var restTemplate: TestRestTemplate
 
     @ParameterizedTest
-    @ValueSource(strings = ["v1/scope", "v1/issue-credential", "token", "accesstoken"])
+    @ValueSource(strings = ["scope", "v1/issue-credential", "token", "accesstoken"])
     internal fun deniedAnonymousGETForPath(path: String) {
         val response =
             restTemplate.exchange(
