@@ -1,5 +1,6 @@
 package org.entur.tokenexchange.e2e
 
+import org.entur.tokenexchange.service.scope.Scope
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,7 +28,7 @@ class ExchangedAccessTokenTest(
     @Test
     fun `should be able to use exchanged token to run API calls against BQ`() {
         val mportenToken = getMportenToken(mportenUsername, mportenPass)
-        val storageToken = with(
+        val distributionCredentials = with(
             HttpHeaders().also {
                 it.setBearerAuth(
                     mportenToken
@@ -35,27 +36,33 @@ class ExchangedAccessTokenTest(
             }
         ) {
             restTemplate.exchange(
-                "http://localhost:$randomServerPort/accesstoken",
+                "http://localhost:$randomServerPort/v1/issue-credential",
                 HttpMethod.GET,
                 HttpEntity<String>(this),
-                String::class.java
+                List::class.java
             ).body!!
         }
+
+        val dc = distributionCredentials.get(1) as LinkedHashMap<String, *>
+        val scope = dc.get("scope") as String
+        val url = dc.get("url") as String
+        val credential = dc.get("credential") as LinkedHashMap<String, *>
 
         val result = with(
             HttpHeaders().also {
                 it.setBearerAuth(
-                    storageToken
+                    credential.get("token") as String
                 )
             }
         ) {
             restTemplate.exchange(
-                "https://storage.googleapis.com/storage/v1/b/tverr_test_test_test/o",
+                url,
                 HttpMethod.GET,
                 HttpEntity<String>(this),
                 Map::class.java
             )
         }
+        assert(scope == Scope.SKYSS_APC.scopeValue)
         assert(result.statusCode == HttpStatus.OK)
         assertTrue((result.body!!.get("items") as ArrayList<*>).size > 1)
     }
