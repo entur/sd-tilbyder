@@ -11,7 +11,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ScopeMappingTest (
+class ScopeMappingTest(
     @Value("\${mporten.username}") val mportenUsername: String,
     @Value("\${mporten.password}") val mportenPass: String,
     @Value("\${mporten.tokenendpoint}") val mportenTokenEndpoint: String
@@ -21,7 +21,6 @@ class ScopeMappingTest (
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
-
 
     @Test
     internal fun tokenmapping() {

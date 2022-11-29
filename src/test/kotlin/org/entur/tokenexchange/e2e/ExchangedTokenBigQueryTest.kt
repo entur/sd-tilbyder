@@ -24,7 +24,6 @@ class ExchangedTokenBigQueryTest(
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
 
-
     @Test
     fun `should be able to use exchanged token to run API calls against BQ`() {
         val mportenToken = getMportenToken(mportenUsername, mportenPass)
@@ -43,10 +42,10 @@ class ExchangedTokenBigQueryTest(
             ).body!!
         }
 
-        val dc = distributionCredentials.get(0) as LinkedHashMap<String,*>
+        val dc = distributionCredentials.get(0) as LinkedHashMap<String, *>
         val scope = dc.get("scope") as String
         val url = dc.get("url") as String
-        val credential = dc.get("credential") as LinkedHashMap<String,*>
+        val credential = dc.get("credential") as LinkedHashMap<String, *>
 
         val result = with(
             HttpHeaders().also {
@@ -65,8 +64,6 @@ class ExchangedTokenBigQueryTest(
         assert(scope == Scope.SKYSS_APC.scopeValue)
         assert(result.statusCode == HttpStatus.OK)
         assert(result.body!!["id"]!! == "entur-data-external:realtime_siri_et_view.realtime_siri_et_last_recorded_view")
-
-
     }
 
     private fun getMportenToken(userName: String, password: String): String =
