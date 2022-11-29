@@ -40,6 +40,16 @@ BIGQUERY_SA_NAME=email på serviceaccounten
 BIGQUERY_SA=json-description av serviceaccount
 ```
 
+### Nytt datasett
+
+Et nytt datasett må få et nytt scope opprettet i Maskinporten under Entur. Deretter må man gjøre følgende
+
+* Scopet inn som gyldig i `SecurityConfig`
+* Scopet må få en ny `Scope`-enum
+* Scopet må få en ny `*Distribution`-klasse som implementerer `ScopeToDistribution`
+* Ny service-account må opprettes som kun har tilgang til de aktuelle datasettene som skal deles
+
+
 ## Testing
 
 Kjøring av integrasjontestene trenger i tillegg følgende properties for å hente ut et gyldig maskinportentoken
