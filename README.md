@@ -31,6 +31,10 @@ Disse hypotesene ble definert i forkant av utviklingsarbeidet og komponenten for
 
 Tilbydere må følge [open-api-specen](src/main/resources/specs/resolve-1.0.0.yaml). For bedre lesbarhet, kopier innholdet inn i https://editor.swagger.io.
 
+### Max-grense på http-headers
+
+Bør sesttes til 8Kb. Dette er default via Tomcat i Spring Boot. 
+
 ## Utvikling 
 
 For å kjøre opp denne applikasjonen trengs følgende env-parametre:
