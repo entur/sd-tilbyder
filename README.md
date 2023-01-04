@@ -37,12 +37,13 @@ Bør sesttes til 8Kb. Dette er default via Tomcat i Spring Boot.
 
 ## Utvikling 
 
-For å kjøre opp denne applikasjonen trengs følgende env-parametre:
+For å kjøre opp denne applikasjonen trengs følgende konfigurasjon i application.yml:
  
 ```
-BIGQUERY_SA_NAME=email på serviceaccounten
-BIGQUERY_SA=json-description av serviceaccount
+saKey: "${DIN_ENV_VARIABLE}"
 ```
+
+Her forutsettes det at det er en Google Service Account private key. 
 
 ### Nytt datasett
 

@@ -1,4 +1,4 @@
-saKey: "${BIGQUERY_SA}"
+saKey: "${apc-skyss-credentials.json}"
 spring:
   security:
     oauth2:
