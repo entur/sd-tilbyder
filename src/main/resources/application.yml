@@ -1,4 +1,4 @@
-saKey: "${apc-skyss-credentials.json}"
+saKey: "${APC_SKYSS_CREDENTIALS_JSON}"
 spring:
   security:
     oauth2:
